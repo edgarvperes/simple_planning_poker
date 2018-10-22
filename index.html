@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000" />
+    <style>
+        .card {
+            background-color: black;
+            border: 3px solid white;
+            color: white;
+            text-align: center;
+            font-size: 24px;
+            border-radius: 30px;
+            width: 20%;
+            height: 20%;
+            cursor: pointer;
+            margin: auto;
+            text-align: center;
+            outline: none;
+        }
+
+        .card_hide {
+            display:none
+        }
+
+        .card_selected {
+            border-width: 6px;
+            width: 90%;
+            height: 90%;
+            font-size: 64px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-right: -50%;
+            transform: translate(-50%, -50%)
+        }
+
+        .card_back {
+            border-style: dotted;
+            color: transparent;
+        }
+
+        html,body {
+            background-color: black;
+            height:100%;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        const CARD_CLASSES = {
+        	base: "card",
+        	hidden: "card_hide",
+        	selected: "card_selected",
+        	backFace: "card_back"
+        }
+
+        const MODES = {
+        	selectionMode: 0,
+        	backMode: 1,
+        	frontMode: 2,
+        	length: 3
+        }
+
+        const FUNCTIONS_BY_MODE = [selectCard, flipCardToFront, unselectCard];
+
+        let cardElements;
+        let currentMode = MODES.selectionMode;
+
+        function init() {
+        	cardElements = document.getElementsByClassName(CARD_CLASSES.base);
+        	for (let i = 0; i < cardElements.length; i++) {
+        		let currentCard = cardElements[i];
+        		currentCard.onclick = function () {
+        			clickedCard(this);
+        		};
+        	}
+        }
+
+        function clickedCard(selectedCard) {
+        	FUNCTIONS_BY_MODE[currentMode](selectedCard);
+        	advanceMode();
+        }
+
+        function advanceMode() {
+        	currentMode = (currentMode + 1) % MODES.length;
+        }
+
+        function selectCard(cardToSelect) {
+        	for (let i = 0; i < cardElements.length; i++) {
+        		let currentCard = cardElements[i];
+        		currentCard.classList.add(CARD_CLASSES.hidden);
+        	}
+        	cardToSelect.classList.add(CARD_CLASSES.selected);
+        	cardToSelect.classList.add(CARD_CLASSES.backFace);
+        	cardToSelect.classList.remove(CARD_CLASSES.hidden);
+        }
+
+        function flipCardToFront(cardToFlip) {
+        	cardToFlip.classList.remove(CARD_CLASSES.backFace);
+        }
+
+        function unselectCard(cardToUnselect) {
+        	for (let i = 0; i < cardElements.length; i++) {
+        		let currentCard = cardElements[i];
+        		currentCard.classList.remove(CARD_CLASSES.hidden);
+        	}
+
+        	cardToUnselect.classList.remove(CARD_CLASSES.selected);
+        }
+
+        window.onload = init;
+    </script>
+
+    <button class="card">0</button>
+    <button class="card">1</button>
+    <button class="card">2</button>
+    <button class="card">3</button>
+    <button class="card">5</button>
+    <button class="card">8</button>
+    <button class="card">13</button>
+    <button class="card">21</button>
+    <button class="card">34</button>
+    <button class="card">&infin;</button>
+    <button class="card">?</button>
+    <button class="card">&#x2615;</button>
+
+</body>
+</html>
