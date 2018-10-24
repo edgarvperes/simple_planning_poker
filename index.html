@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#000000" />
     <style>
         .card {
@@ -18,6 +18,11 @@
             margin: auto;
             text-align: center;
             outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .card:active {
+            background-color: #555555;
         }
 
         .card_hide {
@@ -41,10 +46,19 @@
             color: transparent;
         }
 
-        html,body {
+        body {
             background-color: black;
             height:100%;
-            margin: auto;
+            width:90%;
+            
+            margin: 0;
+            margin-left:10%;
+        }
+        
+        html {
+            width:100%;
+            height:100%;
+            margin: 0;
         }
     </style>
 </head>
@@ -69,6 +83,8 @@
         let cardElements;
         let currentMode = MODES.selectionMode;
 
+        window.onload = init;
+        
         function init() {
         	cardElements = document.getElementsByClassName(CARD_CLASSES.base);
         	for (let i = 0; i < cardElements.length; i++) {
@@ -111,9 +127,9 @@
         	cardToUnselect.classList.remove(CARD_CLASSES.selected);
         }
 
-        window.onload = init;
+        
     </script>
-
+    
     <button class="card">0</button>
     <button class="card">1</button>
     <button class="card">2</button>
