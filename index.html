@@ -20,7 +20,7 @@
             text-align: center;
             width: 22%;
         }
-        
+
         .card:active {
             background-color: #555555;
         }
@@ -38,24 +38,24 @@
 
         .card_back {
             border-style: dotted;
-            color: transparent;            
+            color: transparent;
         }
-        
+
         .inner_desk {
             display: table-cell;
             text-align: center;
             vertical-align: middle;
         }
-        
+
         .outer_desk {
             display: table;
         }
-        
+
         body {
             background-color: black;
             margin: auto;
         }
-        
+
         html, body, .outer_desk, .inner_desk {
             height:100%;
             width:100%;
@@ -82,22 +82,39 @@
         const FUNCTIONS_BY_MODE = [selectCard, flipCardToFront, unselectCard];
 
         let cardElements;
-        let currentMode = MODES.selectionMode;
+        let selectedCard;
+        let hasResetedPageOnHistory = false;
 
         window.onload = init;
-        
+        window.onpopstate = onPopState;
+
+        function onPopState(event){
+            if(!event.state && selectedCard){
+                resetTable();
+            }
+        }
+
+        function resetTable(){
+            currentMode = MODES.selectionMode;
+            if(selectedCard){
+                flipCardToFront(selectedCard)
+                unselectCard(selectedCard)
+            }
+        }
+
         function init() {
         	cardElements = document.getElementsByClassName(CARD_CLASSES.base);
         	for (let i = 0; i < cardElements.length; i++) {
-        		let currentCard = cardElements[i];
+        		const currentCard = cardElements[i];
         		currentCard.onclick = function () {
         			clickedCard(this);
         		};
         	}
+            resetTable();
         }
 
-        function clickedCard(selectedCard) {
-        	FUNCTIONS_BY_MODE[currentMode](selectedCard);
+        function clickedCard(clickedCard) {
+        	FUNCTIONS_BY_MODE[currentMode](clickedCard);
         	advanceMode();
         }
 
@@ -107,12 +124,16 @@
 
         function selectCard(cardToSelect) {
         	for (let i = 0; i < cardElements.length; i++) {
-        		let currentCard = cardElements[i];
+        		const currentCard = cardElements[i];
         		currentCard.classList.add(CARD_CLASSES.hidden);
         	}
         	cardToSelect.classList.add(CARD_CLASSES.selected);
         	cardToSelect.classList.add(CARD_CLASSES.backFace);
         	cardToSelect.classList.remove(CARD_CLASSES.hidden);
+
+            selectedCard = cardToSelect;
+            history.pushState("hasSelected", document.title, window.location.pathname);
+            hasResetedPageOnHistory = true;
         }
 
         function flipCardToFront(cardToFlip) {
@@ -121,27 +142,39 @@
 
         function unselectCard(cardToUnselect) {
         	for (let i = 0; i < cardElements.length; i++) {
-        		let currentCard = cardElements[i];
+        		const currentCard = cardElements[i];
         		currentCard.classList.remove(CARD_CLASSES.hidden);
         	}
+            cardToUnselect.classList.remove(CARD_CLASSES.selected);
 
-        	cardToUnselect.classList.remove(CARD_CLASSES.selected);
+            selectedCard = null;
+
+            if (!hasResetedPageOnHistory){
+                // create a reseted table in the history
+                history.replaceState(null, document.title, window.location.pathname);
+                hasResetedPageOnHistory = true;
+            } else{
+                // Go back to the previously stored reseted table in the history
+                history.back();
+                hasResetedPageOnHistory = false;
+            }
         }
+
     </script>
     <div class="outer_desk">
         <div class="inner_desk">
-            <button class="card">0</button>
-            <button class="card">1</button>
-            <button class="card">2</button>
-            <button class="card">3</button>
-            <button class="card">5</button>
-            <button class="card">8</button>
-            <button class="card">13</button>
-            <button class="card">21</button>
-            <button class="card">34</button>
-            <button class="card">&infin;</button>
-            <button class="card">?</button>
-            <button class="card">&#x2615;</button>
+            <button id="0" class="card">0</button>
+            <button id="1" class="card">1</button>
+            <button id="2" class="card">2</button>
+            <button id="3" class="card">3</button>
+            <button id="5" class="card">5</button>
+            <button id="8" class="card">8</button>
+            <button id="13" class="card">13</button>
+            <button id="21" class="card">21</button>
+            <button id="34" class="card">34</button>
+            <button id="infinite" class="card">&infin;</button>
+            <button id="?" class="card">?</button>
+            <button id="coffee" class="card">&#x2615;</button>
         </div>
     </div>
 </body>
