@@ -133,7 +133,7 @@
         	cardToSelect.classList.remove(CARD_CLASSES.hidden);
 
             selectedCard = cardToSelect;
-            history.pushState("hasSelected", document.title, window.location.pathname);
+            history.pushState("Selected Card State", document.title);
             hasResetedPageOnHistory = true;
         }
 
@@ -151,8 +151,8 @@
             selectedCard = null;
 
             if (!hasResetedPageOnHistory){
-                // create a reseted table in the history
-                history.replaceState(null, document.title, window.location.pathname);
+                // set current state as a reset table in the history
+                history.replaceState(null, document.title);
                 hasResetedPageOnHistory = true;
             } else{
                 // Go back to the previously stored reseted table in the history
