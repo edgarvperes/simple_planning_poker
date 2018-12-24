@@ -90,6 +90,7 @@
 
         function onPopState(event){
             if(!event.state && selectedCard){
+                hasResetedPageOnHistory = false;
                 resetTable();
             }
         }
@@ -110,7 +111,7 @@
         			clickedCard(this);
         		};
         	}
-            resetTable();
+            currentMode = MODES.selectionMode;
         }
 
         function clickedCard(clickedCard) {
