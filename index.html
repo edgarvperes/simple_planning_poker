@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -25,29 +26,29 @@
             background-color: #555555;
         }
 
-        .card_hide {
-            display:none;
+        .cardhide {
+            display: none;
         }
 
-        .card_selected {
+        .cardselected {
             border-width: 2vw;
             font-size: 20vw;
             height: 90%;
             width: 90%;
         }
 
-        .card_back {
+        .cardback {
             border-style: dotted;
             color: transparent;
         }
 
-        .inner_desk {
+        .innerdesk {
             display: table-cell;
             text-align: center;
             vertical-align: middle;
         }
 
-        .outer_desk {
+        .outerdesk {
             display: table;
         }
 
@@ -56,114 +57,138 @@
             margin: auto;
         }
 
-        html, body, .outer_desk, .inner_desk {
-            height:100%;
-            width:100%;
+        html,
+        body,
+        .outerdesk,
+        .innerdesk {
+            height: 100%;
+            width: 100%;
         }
-
     </style>
 </head>
+
 <body>
     <script>
-        const CARD_CLASSES = {
-        	base: "card",
-        	hidden: "card_hide",
-        	selected: "card_selected",
-        	backFace: "card_back"
+        const cardClasses = {
+            base: "card",
+            hidden: "cardhide",
+            selected: "cardselected",
+            back: "cardback"
         }
 
-        const MODES = {
-        	selectionMode: 0,
-        	backMode: 1,
-        	frontMode: 2,
-        	length: 3
+        const modes = {
+            selectionMode: 0,
+            backMode: 1,
+            frontMode: 2,
+            length: 3
         }
 
-        const FUNCTIONS_BY_MODE = [selectCard, flipCardToFront, unselectCard];
+        const functionsByMode = [resetTableOrGoBackHistoryIfPossible, selectCardBack, selectCardFront];
 
         let cardElements;
-        let selectedCard;
-        let hasResetedPageOnHistory = false;
+        let canGoBack = false;
+        let currentMode;
 
         window.onload = init;
         window.onpopstate = onPopState;
 
-        function onPopState(event){
-            if(!event.state && selectedCard){
-                hasResetedPageOnHistory = false;
+        function onPopState(event) {
+            canGoBack = !event.state.isFirstPage;
+
+            currentMode = modes.selectionMode;
+            processCurrentState(null);
+        }
+
+        function init() {
+            cardElements = document.getElementsByClassName(cardClasses.base);
+            for (let i = 0; i < cardElements.length; i++) {
+                const currentCard = cardElements[i];
+                currentCard.onclick = function () {
+                    clickedCard(this.id);
+                };
+            }
+            currentMode = modes.selectionMode;
+
+            // mark this page as our first page is history
+            history.replaceState({ isFirstPage: true }, document.title);
+        }
+
+        function clickedCard(cardId) {
+            advanceMode();
+
+            pushHistoryIfNeeded();
+            processCurrentState(cardId);
+        }
+
+        function processCurrentState(cardId) {
+            functionsByMode[currentMode](cardId);
+        }
+
+        function advanceMode() {
+            currentMode = (currentMode + 1) % modes.length
+        }
+
+        function pushHistoryIfNeeded() {
+            if (currentMode == modes.selectionMode) {
+                return;
+            }
+            if (!canGoBack) {
+                history.pushState({ isFirstPage: false }, document.title);
+                canGoBack = true;
+            }
+        }
+
+        function selectCardFront(cardId) {
+            resetTable();
+            const selectedCardNode = document.getElementById(cardId);
+
+            for (let i = 0; i < cardElements.length; i++) {
+                const currentCard = cardElements[i];
+                currentCard.classList.add(cardClasses.hidden)
+            }
+            selectedCardNode.classList.add(cardClasses.selected)
+            selectedCardNode.classList.remove(cardClasses.hidden)
+
+            currentMode = modes.frontMode;
+        }
+
+        function selectCardBack(cardId) {
+            resetTable();
+            const selectedCardNode = document.getElementById(cardId);
+
+            for (let i = 0; i < cardElements.length; i++) {
+                const currentCard = cardElements[i];
+                currentCard.classList.add(cardClasses.hidden)
+            }
+            selectedCardNode.classList.add(cardClasses.selected)
+            selectedCardNode.classList.add(cardClasses.back)
+            selectedCardNode.classList.remove(cardClasses.hidden)
+
+            currentMode = modes.backMode;
+        }
+
+        function resetTable() {
+            for (let i = 0; i < cardElements.length; i++) {
+                const currentCardClasses = cardElements[i].classList;
+                currentCardClasses.remove(cardClasses.hidden)
+                currentCardClasses.remove(cardClasses.selected)
+                currentCardClasses.remove(cardClasses.back)
+            }
+            currentMode = modes.selectionMode;
+        }
+
+        function resetTableOrGoBackHistoryIfPossible() {
+            if (canGoBack) {
+                canGoBack = false;
+                history.back();
+            } else {
                 resetTable();
             }
         }
 
-        function resetTable(){
-            currentMode = MODES.selectionMode;
-            if(selectedCard){
-                flipCardToFront(selectedCard)
-                unselectCard(selectedCard)
-            }
-        }
-
-        function init() {
-        	cardElements = document.getElementsByClassName(CARD_CLASSES.base);
-        	for (let i = 0; i < cardElements.length; i++) {
-        		const currentCard = cardElements[i];
-        		currentCard.onclick = function () {
-        			clickedCard(this);
-        		};
-        	}
-            currentMode = MODES.selectionMode;
-        }
-
-        function clickedCard(clickedCard) {
-        	FUNCTIONS_BY_MODE[currentMode](clickedCard);
-        	advanceMode();
-        }
-
-        function advanceMode() {
-        	currentMode = (currentMode + 1) % MODES.length;
-        }
-
-        function selectCard(cardToSelect) {
-        	for (let i = 0; i < cardElements.length; i++) {
-        		const currentCard = cardElements[i];
-        		currentCard.classList.add(CARD_CLASSES.hidden);
-        	}
-        	cardToSelect.classList.add(CARD_CLASSES.selected);
-        	cardToSelect.classList.add(CARD_CLASSES.backFace);
-        	cardToSelect.classList.remove(CARD_CLASSES.hidden);
-
-            selectedCard = cardToSelect;
-            history.pushState("Selected Card State", document.title);
-            hasResetedPageOnHistory = true;
-        }
-
-        function flipCardToFront(cardToFlip) {
-        	cardToFlip.classList.remove(CARD_CLASSES.backFace);
-        }
-
-        function unselectCard(cardToUnselect) {
-        	for (let i = 0; i < cardElements.length; i++) {
-        		const currentCard = cardElements[i];
-        		currentCard.classList.remove(CARD_CLASSES.hidden);
-        	}
-            cardToUnselect.classList.remove(CARD_CLASSES.selected);
-
-            selectedCard = null;
-
-            if (!hasResetedPageOnHistory){
-                // set current state as a reset table in the history
-                history.replaceState(null, document.title);
-                hasResetedPageOnHistory = true;
-            } else{
-                // Go back to the previously stored reseted table in the history
-                history.back();
-                hasResetedPageOnHistory = false;
-            }
-        }
-
     </script>
-    <div class="outer_desk">
-        <div class="inner_desk">
+    <div class="outerdesk">
+        <div class="innerdesk">
             <button id="0" class="card">0</button>
             <button id="1" class="card">1</button>
             <button id="2" class="card">2</button>
@@ -179,4 +204,5 @@
         </div>
     </div>
 </body>
+
 </html>
